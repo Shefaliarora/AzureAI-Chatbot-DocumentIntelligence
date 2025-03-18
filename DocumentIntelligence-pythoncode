@@ -1,0 +1,133 @@
+from promptflow import tool
+from azure.core.credentials import AzureKeyCredential
+from azure.ai.documentintelligence import DocumentIntelligenceClient
+from azure.ai.documentintelligence.models import AnalyzeResult
+from azure.ai.documentintelligence.models import AnalyzeDocumentRequest
+
+
+endpoint = "YOUR_ENDPOINT"
+key = "YOUR_PRIMARY_KEY"
+
+# The inputs section will change based on the arguments of the tool function, after you save the code
+# Adding type to arguments and return value will help the system show the types properly
+# Please update the function name/signature per need
+@tool
+def document_intelligence(url: str)->str:
+    finalResponse=""
+
+    document_intelligence_client = DocumentIntelligenceClient(
+    endpoint=endpoint, credential=AzureKeyCredential(key)
+    )
+    
+    poller = document_intelligence_client.begin_analyze_document(
+        "prebuilt-invoice", AnalyzeDocumentRequest(url_source=url)
+    )
+    invoices = poller.result()
+    
+    for idx, invoice in enumerate(invoices.documents):
+        print("--------Recognizing invoice #{}--------".format(idx + 1))
+        vendor_name = invoice.fields.get("VendorName")
+        if(vendor_name):
+            finalResponse = finalResponse + "vendor name:" + str(vendor_name.get('content')) + "\n"
+
+        vendor_address = invoice.fields.get("VendorAddress")
+        if(vendor_address):
+            finalResponse = finalResponse + "vendor address:" + str(vendor_address.get('content')) + "\n"
+            
+        vendor_address_recipient = invoice.fields.get("VendorAddressRecipient")
+        if(vendor_address_recipient):
+            finalResponse = finalResponse + "vendor address recipient" + str(vendor_address_recipient.get('content')) + "\n"
+
+        customer_name = invoice.fields.get("CustomerName")
+        if(customer_name):
+            finalResponse = finalResponse + "customer name:" + str(customer_name.get('content')) + "\n"
+
+        customer_id = invoice.fields.get("CustomerId")
+        if(customer_id):
+            finalResponse = finalResponse + "customer id:" + str(customer_id.get('content')) + "/n"
+
+        customer_address = invoice.fields.get("CustomerAddress")
+        if(customer_address):
+            finalResponse = finalResponse + "customer address" + str(customer_address.get('content')) + "\n"
+            
+        customer_address_recipient = invoice.fields.get("CustomerAddressRecipient")
+        if(customer_address_recipient):
+            finalResponse = finalResponse + "customer address recipient" + str(customer_address_recipient.get('content')) + "\n"
+
+        invoice_id = invoice.fields.get("InvoiceId")
+        if(invoice_id):
+            finalResponse = finalResponse + "invoice id" + str(invoice_id.get('content')) + "\n"
+
+        invoice_date = invoice.fields.get("InvoiceDate")
+        if(invoice_date):
+            finalResponse = finalResponse + "invoice date" + str(invoice_date.get('content')) + "\n"
+
+        invoice_total = invoice.fields.get("InvoiceTotal")
+        if(invoice_total):
+            finalResponse = finalResponse + "invoice total" + str(invoice_total.get('content')) + "\n"
+
+        due_date = invoice.fields.get("DueDate")
+        if due_date:
+           finalResponse += "due date: " + str(due_date.get('content')) + "\n"
+
+        purchase_order = invoice.fields.get("PurchaseOrder")
+        if purchase_order:
+           finalResponse += "purchase order: " + str(purchase_order.get('content')) + "\n"
+
+        billing_address = invoice.fields.get("BillingAddress")
+        if billing_address:
+           finalResponse += "billing address: " + str(billing_address.get('content')) + "\n"
+
+        billing_address_recipient = invoice.fields.get("BillingAddressRecipient")
+        if billing_address_recipient:
+           finalResponse += "billing address recipient: " + str(billing_address_recipient.get('content')) + "\n"
+
+        shipping_address = invoice.fields.get("ShippingAddress")
+        if shipping_address:
+           finalResponse += "shipping address: " + str(shipping_address.get('content')) + "\n"
+
+        shipping_address_recipient = invoice.fields.get("ShippingAddressRecipient")
+        if shipping_address_recipient:
+           finalResponse += "shipping address recipient: " + str(shipping_address_recipient.get('content')) + "\n"
+
+        subtotal = invoice.fields.get("SubTotal")
+        if subtotal:
+           finalResponse += "subtotal: " + str(subtotal.get('content')) + "\n"
+
+        total_tax = invoice.fields.get("TotalTax")
+        if total_tax:
+           finalResponse += "total tax: " + str(total_tax.get('content')) + "\n"
+
+        previous_unpaid_balance = invoice.fields.get("PreviousUnpaidBalance")
+        if previous_unpaid_balance:
+           finalResponse += "previous unpaid balance: " + str(previous_unpaid_balance.get('content')) + "\n"
+
+        amount_due = invoice.fields.get("AmountDue")
+        if amount_due:
+           finalResponse += "amount due: " + str(amount_due.get('content')) + "\n"
+
+        service_start_date = invoice.fields.get("ServiceStartDate")
+        if service_start_date:
+           finalResponse += "service start date: " + str(service_start_date.get('content')) + "\n"
+
+        service_end_date = invoice.fields.get("ServiceEndDate")
+        if service_end_date:
+           finalResponse += "service end date: " + str(service_end_date.get('content')) + "\n"
+
+        service_address = invoice.fields.get("ServiceAddress")
+        if service_address:
+           finalResponse += "service address: " + str(service_address.get('content')) + "\n"
+
+        service_address_recipient = invoice.fields.get("ServiceAddressRecipient")
+        if service_address_recipient:
+           finalResponse += "service address recipient: " + str(service_address_recipient.get('content')) + "\n"
+
+        remittance_address = invoice.fields.get("RemittanceAddress")
+        if remittance_address:
+           finalResponse += "remittance address: " + str(remittance_address.get('content')) + "\n"
+
+        remittance_address_recipient = invoice.fields.get("RemittanceAddressRecipient")
+        if remittance_address_recipient:
+           finalResponse += "remittance address recipient: " + str(remittance_address_recipient.get('content')) + "\n"
+
+    return finalResponse
